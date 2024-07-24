@@ -48,21 +48,21 @@
               <a
                 class="inline-block py-2 px-4 text-black font-bold no-underline"
                 href="#"
-                >Active</a
+                >Home</a
               >
             </li>
             <li class="mr-3">
               <a
                 class="inline-block text-black no-underline hover:text-gray-800 hover:text-underline py-2 px-4"
                 href="#"
-                >link</a
+                >FAQ</a
               >
             </li>
             <li class="mr-3">
               <a
                 class="inline-block text-black no-underline hover:text-gray-800 hover:text-underline py-2 px-4"
                 href="#"
-                >link</a
+                >Support</a
               >
             </li>
           </ul>
@@ -70,7 +70,7 @@
             id="navAction"
             class="mx-auto lg:mx-0 hover:underline text-gray-800 font-extrabold rounded mt-4 lg:mt-0 py-4 px-8 shadow opacity-75"
           >
-            Action
+            Sign In
           </button>
         </div>
       </div>

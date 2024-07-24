@@ -1,19 +1,17 @@
+<script>
+    import Logo from "./Logo.svelte";
+
+</script>
 <footer class="bg-white ">
       <div class="container mx-auto mt-8 px-8">
         <div class="w-full flex flex-col md:flex-row py-6">
           <div class="flex-1 mb-6">
             <a
-              class="text-orange-600 no-underline hover:no-underline font-bold text-2xl lg:text-4xl"
+              class="flex text-orange-600 no-underline hover:no-underline font-bold text-2xl lg:text-4xl"
               href="#"
             >
-              <svg
-                class="h-6 w-6 inline-block"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-              >
-                <path d="M13 8V0L8.11 5.87 3 12h4v8L17 8h-4z" />
-              </svg>
-              Bolt App
+              <Logo />
+              Wishlist
             </a>
           </div>
 
