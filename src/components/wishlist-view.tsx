@@ -14,30 +14,10 @@ function errorMessage(error: unknown) {
   return error instanceof Error ? error.message : "Something went wrong. Please try again.";
 }
 
-function CircuitBoard({ gifts, ownedReservationIds }: { gifts: Gift[]; ownedReservationIds: string[] }) {
-  const open = gifts.filter((gift) => !gift.reserved).length;
-  const summary = gifts.length === 0 ? "Gift ideas are on the way." : open === gifts.length ? `${gifts.length} ${gifts.length === 1 ? "idea" : "ideas"}, all still available` : `${open} of ${gifts.length} still available`;
-  return <div className="board">
-    <span className="board-hole board-hole-tl" /><span className="board-hole board-hole-tr" /><span className="board-hole board-hole-bl" /><span className="board-hole board-hole-br" />
-    <div className="board-copy">
-      <h1 id="wishlist-title" className="board-title">A few things I&apos;d love.</h1>
-      <p className="board-intro">Birthday and Christmas ideas, mostly things I can build with. If you pick one, reserve it here so nobody buys the same gift twice.</p>
-    </div>
-    <div className="board-legend"><p>{summary}</p><span><span className="led" />Available</span><span><span className="led led-reserved" />Reserved</span></div>
-    {gifts.length > 0 && <ol className="board-bus" aria-label="Jump to a gift">
-      {gifts.map((gift, index) => <li key={gift.id} className="part" style={{ "--i": index } as CSSProperties}>
-        <a className="part-link" href={`#gift-${gift.id}`}>
-          <span className="part-package">
-            {gift.imageUrl ? <Image src={gift.imageUrl} alt="" fill sizes="120px" unoptimized /> : <GiftIcon size={34} strokeWidth={1.3} />}
-            <span className={`led part-led ${gift.reserved ? "led-reserved" : ""}`} />
-          </span>
-          <span className="part-label"><span className="part-ref">U{index + 1}</span>{gift.title}</span>
-          <span className="sr-only">{ownedReservationIds.includes(gift.id) ? ", reserved by you" : gift.reserved ? ", reserved" : ", available"}</span>
-        </a>
-      </li>)}
-    </ol>}
-    <span className="board-rev" aria-hidden="true">rev 2026</span>
-  </div>;
+// The intro fills two grid slots on wider layouts; the closing note stretches to finish the last row.
+function closingSpan(itemCount: number) {
+  const used = itemCount + 2;
+  return { "--span-3": 3 - (used % 3), "--span-2": 2 - (used % 2) } as CSSProperties;
 }
 
 function Dialog({ title, children, onClose, busy }: { title: string; children: ReactNode; onClose: () => void; busy: boolean }) {
@@ -82,7 +62,7 @@ function GiftForm({ gift, busy, onSave, onClose }: { gift?: Gift; busy: boolean;
     <label>Shop link<input name="url" type="url" required maxLength={2048} defaultValue={gift?.url} placeholder="https://" /></label>
     <label>Image link <span className="optional">Optional</span><input name="imageUrl" maxLength={2048} defaultValue={gift?.imageUrl} placeholder="https://" /></label>
     <div className="form-row"><label>Price <span className="optional">Optional</span><input name="price" maxLength={80} defaultValue={gift?.price} placeholder="$49.99" /></label><label>Price note <span className="optional">Optional</span><input name="priceNote" maxLength={300} defaultValue={gift?.priceNote} placeholder="Before shipping" /></label></div>
-    <label>Photo background<select name="accent" defaultValue={gift?.accent ?? "lavender"}><option value="mint">Green</option><option value="lavender">Blue</option><option value="rose">Gold</option></select></label>
+    <label>Photo background<select name="accent" defaultValue={gift?.accent ?? "lavender"}><option value="mint">Green</option><option value="lavender">Blue</option><option value="rose">Sand</option></select></label>
     {validationError && <p className="form-error" role="alert">{validationError}</p>}
     <div className="dialog-actions"><button type="button" className="button button-secondary" onClick={onClose} disabled={busy}>Cancel</button><button type="submit" className="button button-primary" disabled={busy}>{busy && <LoaderCircle className="spinner" size={18} />}{gift ? "Save changes" : "Add gift"}</button></div>
   </form>;
@@ -90,23 +70,21 @@ function GiftForm({ gift, busy, onSave, onClose }: { gift?: Gift; busy: boolean;
 
 function GiftCard({ gift, isOwner, owned, busy, processing, sharingReady, onReserve, onRelease, onEdit, onDelete }: { gift: Gift; isOwner: boolean; owned: boolean; busy: boolean; processing: boolean; sharingReady: boolean; onReserve: () => void; onRelease: () => void; onEdit: () => void; onDelete: () => void }) {
   const [imageFailed, setImageFailed] = useState(false);
-  return <article className="gift" id={`gift-${gift.id}`} aria-labelledby={`gift-title-${gift.id}`}>
+  return <article className={`cell gift ${gift.reserved ? "gift-reserved" : ""}`} aria-labelledby={`gift-title-${gift.id}`}>
     <div className={`gift-photo gift-photo-${gift.accent}`}>
-      <span className={`gift-status ${gift.reserved ? "gift-status-reserved" : ""}`}><span className={`led ${gift.reserved ? "led-reserved" : ""}`} />{owned ? "Reserved by you" : gift.reserved ? "Reserved" : "Available"}</span>
-      {gift.imageUrl && !imageFailed ? <Image src={gift.imageUrl} alt={gift.title} fill sizes="(max-width: 760px) 100vw, 420px" unoptimized onError={() => setImageFailed(true)} /> : <div className="gift-photo-fallback"><GiftIcon size={64} strokeWidth={1.2} /><span>{gift.brand}</span></div>}
+      {gift.imageUrl && !imageFailed ? <Image src={gift.imageUrl} alt={gift.title} fill sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 380px" unoptimized onError={() => setImageFailed(true)} /> : <div className="gift-photo-fallback"><GiftIcon size={56} strokeWidth={1.2} /><span>{gift.brand}</span></div>}
       {isOwner && <div className="gift-owner-tools"><button type="button" className="icon-button" aria-label={`Edit ${gift.title}`} onClick={onEdit} disabled={busy || !sharingReady}><Pencil size={17} /></button><button type="button" className="icon-button" aria-label={`Delete ${gift.title}`} onClick={onDelete} disabled={busy || !sharingReady}><Trash2 size={17} /></button></div>}
     </div>
     <div className="gift-body">
-      <p className="gift-brand">{gift.brand}</p>
+      <p className="gift-status"><span className="indicator" />{owned ? "Reserved by you" : gift.reserved ? "Reserved" : "Available"}</p>
       <h3 id={`gift-title-${gift.id}`} className="gift-title">{gift.title}</h3>
+      <p className="gift-brand">{gift.brand}</p>
       <p className="gift-description">{gift.description}</p>
-      <dl className="gift-specs">
-        <div><dt>Price</dt><dd><span className="gift-price">{gift.price || "See the store"}</span>{gift.priceNote && <span className="gift-price-note">{gift.priceNote}</span>}</dd></div>
-        <div><dt>Category</dt><dd>{gift.category}</dd></div>
-      </dl>
+      <p className="gift-price">{gift.price || "See the store"}</p>
+      {gift.priceNote && <p className="gift-price-note">{gift.priceNote}</p>}
       <div className="gift-actions">
-        {owned ? <button type="button" className="button button-secondary" onClick={onRelease} disabled={busy || !sharingReady}>{processing ? <LoaderCircle size={18} className="spinner" /> : <Check size={18} />}Release reservation</button> : <button type="button" className={`button ${gift.reserved ? "button-reserved" : "button-primary"}`} disabled={gift.reserved || busy || !sharingReady} onClick={onReserve}>{processing ? <LoaderCircle size={18} className="spinner" /> : gift.reserved ? <Check size={18} /> : <GiftIcon size={18} />}{gift.reserved ? "Already reserved" : "Reserve this gift"}</button>}
-        <a className="button button-secondary" href={gift.url} target="_blank" rel="noopener noreferrer">View at store<ArrowUpRight size={18} /><span className="sr-only">(opens in a new tab)</span></a>
+        {owned ? <button type="button" className="key" onClick={onRelease} disabled={busy || !sharingReady}>{processing ? <LoaderCircle size={18} className="spinner" /> : <Check size={18} />}Release</button> : <button type="button" className={`key ${gift.reserved ? "" : "key-signal"}`} disabled={gift.reserved || busy || !sharingReady} onClick={onReserve}>{processing ? <LoaderCircle size={18} className="spinner" /> : gift.reserved ? <Check size={18} /> : <GiftIcon size={18} />}{gift.reserved ? "Already reserved" : "Reserve"}</button>}
+        <a className="key" href={gift.url} target="_blank" rel="noopener noreferrer">View at store<ArrowUpRight size={18} /><span className="sr-only">(opens in a new tab)</span></a>
       </div>
     </div>
   </article>;
@@ -139,28 +117,41 @@ export function WishlistView(props: WishlistViewProps) {
 
   return <div className="wishlist-page">
     <header className="site-header page-width">
-      <Link className="wordmark" href="/" aria-label="Juan's wishlist home"><span className="wordmark-icon"><GiftIcon size={20} strokeWidth={1.8} /></span><span>Juan&apos;s wishlist</span></Link>
-      <nav className="header-actions" aria-label="Wishlist actions"><a className="account-link" href={props.accountHref}>{props.signedIn ? "Sign out" : "Owner sign in"}</a><button type="button" className="button button-share" aria-label={shareLabel} onClick={share}><Share2 size={17} /><span>{shareLabel}</span></button></nav>
+      <Link className="wordmark" href="/">Juan&apos;s wishlist</Link>
+      <nav className="header-actions" aria-label="Wishlist actions"><a className="account-link" href={props.accountHref}>{props.signedIn ? "Sign out" : "Owner sign in"}</a><button type="button" className="key key-share" aria-label={shareLabel} onClick={share}><Share2 size={17} /><span>{shareLabel}</span></button></nav>
     </header>
 
-    <main>
-      <section className="hero page-width" aria-labelledby="wishlist-title">
-        <CircuitBoard gifts={gifts} ownedReservationIds={ownedReservationIds} />
-      </section>
+    <main className="page-width">
+      {!sharingReady && <div className="development-notice"><Link2 size={19} /><div><strong>Reservations are being set up.</strong><p>You can still share this list and visit the stores.</p></div></div>}
+      {props.signedIn && !isOwner && <p className="account-notice">This account can&apos;t edit Juan&apos;s wishlist. Family can still reserve gifts.</p>}
+      {notice && !modal && <div className={`notice notice-${notice.kind}`} role={notice.kind === "error" ? "alert" : "status"}>{notice.kind === "success" && <Check size={18} />}<span>{notice.text}</span><button type="button" aria-label="Dismiss message" className="icon-button" onClick={() => setNotice(null)}><X size={17} /></button></div>}
 
-      <section className="wishlist-section page-width" aria-labelledby="gifts-heading">
-        <div className="section-heading"><div><h2 id="gifts-heading">The list</h2><p>Reserve a gift first, then buy it from the store.</p></div>{isOwner && <button type="button" className="button button-primary" onClick={() => { setNotice(null); setModal({ kind: "add" }); }} disabled={!sharingReady || pending !== null}><Plus size={18} />Add a gift</button>}</div>
-        <div className="list-toolbar"><div className="filter-group" role="group" aria-label="Filter gifts">{([{ value: "all", label: "All gifts", count: gifts.length }, { value: "available", label: "Available", count: availableCount }, { value: "reserved", label: "Reserved", count: gifts.length - availableCount }] satisfies { value: Filter; label: string; count: number }[]).map((item) => <button type="button" key={item.value} aria-pressed={filter === item.value} className={`filter-button ${filter === item.value ? "filter-active" : ""}`} onClick={() => setFilter(item.value)}>{item.label}<span>{item.count}</span></button>)}</div></div>
+      <div className="catalog">
+        <section className="cell intro" aria-labelledby="wishlist-title">
+          <h1 id="wishlist-title">A few things I&apos;d love.</h1>
+          <div className="intro-footer">
+          <p className="intro-text">Birthday and Christmas ideas, mostly things I can build with.</p>
+          <div className="intro-controls">
+            <div className="filter-group" role="group" aria-label="Filter gifts">{([{ value: "all", label: "All", count: gifts.length }, { value: "available", label: "Available", count: availableCount }, { value: "reserved", label: "Reserved", count: gifts.length - availableCount }] satisfies { value: Filter; label: string; count: number }[]).map((item) => <button type="button" key={item.value} aria-pressed={filter === item.value} className="filter-button" onClick={() => setFilter(item.value)}>{item.label}<span>{item.count}</span></button>)}</div>
+            {isOwner && <button type="button" className="key" onClick={() => { setNotice(null); setModal({ kind: "add" }); }} disabled={!sharingReady || pending !== null}><Plus size={18} />Add a gift</button>}
+          </div>
+          </div>
+        </section>
 
-        {!sharingReady && <div className="development-notice"><Link2 size={19} /><div><strong>Reservations are being set up.</strong><p>You can still share this list and visit the stores.</p></div></div>}
-        {props.signedIn && !isOwner && <p className="account-notice">This account can&apos;t edit Juan&apos;s wishlist. Family can still reserve gifts.</p>}
-        {notice && !modal && <div className={`notice notice-${notice.kind}`} role={notice.kind === "error" ? "alert" : "status"}>{notice.kind === "success" && <Check size={18} />}<span>{notice.text}</span><button type="button" aria-label="Dismiss message" className="icon-button" onClick={() => setNotice(null)}><X size={17} /></button></div>}
-        {loading ? <div className="loading-state" role="status"><LoaderCircle className="spinner" size={24} />Loading the wishlist...</div> : filteredGifts.length ? <div className="gift-list">{filteredGifts.map((gift) => <GiftCard key={`${gift.id}-${gift.imageUrl}`} gift={gift} isOwner={isOwner} owned={ownedReservationIds.includes(gift.id)} busy={pending !== null} processing={pending === gift.id} sharingReady={sharingReady} onReserve={() => { setNotice(null); setModal({ kind: "reserve", gift }); }} onRelease={() => void perform(gift.id, () => props.onRelease(gift.id), "Reservation released. This gift is available again.")} onEdit={() => { setNotice(null); setModal({ kind: "edit", gift }); }} onDelete={() => { setNotice(null); setModal({ kind: "delete", gift }); }} />)}</div> : <div className="empty-state"><h3>{filter === "reserved" ? "No gifts reserved yet." : filter === "available" ? "Every gift is reserved." : "A little room for inspiration."}</h3><p>{filter === "reserved" ? "Choose a gift and reserve it to avoid a duplicate." : filter === "available" ? "Thank you for making the list happen." : isOwner ? "Add the first thing you would love." : "Check back for gift ideas soon."}</p>{filter !== "all" && <button type="button" className="button button-secondary" onClick={() => setFilter("all")}>See all gifts</button>}</div>}
-        <p className="list-footnote">Reservations help avoid duplicate gifts. You can release yours from this browser if plans change.</p>
-      </section>
+        {loading ? <div className="cell loading-state" role="status"><LoaderCircle className="spinner" size={24} />Loading the wishlist...</div> : filteredGifts.length ? filteredGifts.map((gift) => <GiftCard key={`${gift.id}-${gift.imageUrl}`} gift={gift} isOwner={isOwner} owned={ownedReservationIds.includes(gift.id)} busy={pending !== null} processing={pending === gift.id} sharingReady={sharingReady} onReserve={() => { setNotice(null); setModal({ kind: "reserve", gift }); }} onRelease={() => void perform(gift.id, () => props.onRelease(gift.id), "Reservation released. This gift is available again.")} onEdit={() => { setNotice(null); setModal({ kind: "edit", gift }); }} onDelete={() => { setNotice(null); setModal({ kind: "delete", gift }); }} />) : <div className="cell empty-state"><h2>{filter === "reserved" ? "No gifts reserved yet." : filter === "available" ? "Every gift is reserved." : "Nothing on the list yet."}</h2><p>{filter === "reserved" ? "Choose a gift and reserve it to avoid a duplicate." : filter === "available" ? "Thank you for making the list happen." : isOwner ? "Add the first thing you would love." : "Check back for gift ideas soon."}</p>{filter !== "all" && <button type="button" className="key" onClick={() => setFilter("all")}>See all gifts</button>}</div>}
+
+        <aside className="cell closing" aria-labelledby="how-heading" style={closingSpan(loading ? 1 : Math.max(filteredGifts.length, 1))}>
+          <h2 id="how-heading">How reserving works</h2>
+          <ol className="steps">
+            <li>Reserve a gift here so nobody else buys the same one.</li>
+            <li>Buy it from the store link.</li>
+            <li>Plans changed? Release it from the same browser.</li>
+          </ol>
+          <p className="closing-thanks">Thanks for thinking of me.<Heart size={16} /></p>
+        </aside>
+      </div>
     </main>
 
-    <footer className="site-footer page-width"><p>Thanks for thinking of me.<Heart size={16} /></p><span>Juan&apos;s birthday and Christmas wishlist</span></footer>
 
     {modal && <Dialog title={modal.kind === "add" ? "Add a gift" : modal.kind === "edit" ? "Edit gift" : modal.kind === "delete" ? "Remove this gift?" : "Reserve this gift?"} busy={pending !== null} onClose={() => { setModal(null); setNotice(null); }}>
       {notice?.kind === "error" && <p className="form-error" role="alert">{notice.text}</p>}
