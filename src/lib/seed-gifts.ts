@@ -43,4 +43,32 @@ export const seedGifts: Gift[] = [
     accent: "rose",
     reserved: false,
   },
+  {
+    id: "satellite1-dev-kit",
+    title: "Satellite1.1 Dev Kit (DIY)",
+    brand: "FutureProofHomes",
+    description:
+      "An ESP32-S3 voice assistant and multi-sensor board with an XMOS audio chip, 25W amplifier, LED ring, and Home Assistant support.",
+    url: "https://futureproofhomes.net/products/satellite1-pcb-dev-kit",
+    imageUrl: "/products/satellite1-dev-kit.jpg",
+    price: "$69.99",
+    priceNote: "US version price checked Oct 7, 2026.",
+    category: "DIY electronics",
+    accent: "mint",
+    reserved: false,
+  },
+  {
+    id: "satellite1-speaker",
+    title: "Satellite1.1 Smart Speaker",
+    brand: "FutureProofHomes",
+    description:
+      "A pre-assembled private voice assistant and smart speaker with presence detection, built for Home Assistant and Music Assistant.",
+    url: "https://futureproofhomes.net/products/satellite1-smart-speaker?variant=52504977146136",
+    imageUrl: "/products/satellite1-speaker.jpg",
+    price: "$134.99",
+    priceNote: "Charcoal Gray, US version; price checked Oct 7, 2026.",
+    category: "Smart home",
+    accent: "lavender",
+    reserved: false,
+  },
 ];

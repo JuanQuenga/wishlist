@@ -2,6 +2,7 @@ import { convexTest } from "convex-test";
 import { beforeEach, describe, expect, it } from "vitest";
 import { api, internal } from "../convex/_generated/api";
 import schema from "../convex/schema";
+import { seedGifts } from "../src/lib/seed-gifts";
 import type { GiftInput } from "../src/lib/wishlist";
 
 const modules = import.meta.glob("../convex/**/*.ts");
@@ -117,7 +118,7 @@ describe("wishlist Convex functions", () => {
     const t = convexTest(schema, modules);
     await t.mutation(internal.gifts.seed, {});
     const seeded = await t.query(api.gifts.list, {});
-    expect(seeded).toHaveLength(3);
+    expect(seeded).toHaveLength(seedGifts.length);
     expect(seeded.some((gift) => gift.title === "Microduck" && gift.reserved === false)).toBe(true);
 
     await t.run(async (ctx) => {
@@ -128,7 +129,7 @@ describe("wishlist Convex functions", () => {
     await t.mutation(internal.gifts.seed, {});
 
     const afterSecondSeed = await t.query(api.gifts.list, {});
-    expect(afterSecondSeed).toHaveLength(3);
+    expect(afterSecondSeed).toHaveLength(seedGifts.length);
     expect(afterSecondSeed[0]?.title).toBe("My edited gift");
   });
 
