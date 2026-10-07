@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { DM_Sans, Outfit } from "next/font/google";
+import { Archivo, Atkinson_Hyperlegible_Next } from "next/font/google";
 import { Providers } from "@/components/providers";
 import { ClerkProvider } from "@clerk/nextjs";
 import { isAuthConfigured } from "@/lib/auth-config";
 import "./globals.css";
 
-const display = Outfit({ subsets: ["latin"], variable: "--font-display" });
-const body = DM_Sans({ subsets: ["latin"], variable: "--font-body" });
+const display = Archivo({ subsets: ["latin"], axes: ["wdth"], variable: "--font-display" });
+const body = Atkinson_Hyperlegible_Next({ subsets: ["latin"], variable: "--font-body", adjustFontFallback: false });
 
 export const metadata: Metadata = {
   title: "Juan's wishlist",
