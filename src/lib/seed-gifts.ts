@@ -29,4 +29,18 @@ export const seedGifts: Gift[] = [
     accent: "lavender",
     reserved: false,
   },
+  {
+    id: "microduck",
+    title: "Microduck",
+    brand: "Pollen Robotics",
+    description:
+      "A compact, 25 cm biped robot with 15 motors, a camera, ToF LiDAR, and an included gamepad for robotics and physical AI experiments.",
+    url: "https://store.pollen-robotics.com/products/microduck",
+    imageUrl: "/products/microduck.jpg",
+    price: "$399",
+    priceNote: "Pre-order price before taxes and shipping; checked Oct 6, 2026.",
+    category: "DIY electronics",
+    accent: "rose",
+    reserved: false,
+  },
 ];

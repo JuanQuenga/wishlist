@@ -1,5 +1,7 @@
 # Juan's wishlist
 
+Production site: [wishlist.juanquenga.com](https://wishlist.juanquenga.com).
+
 A personal birthday and Christmas wishlist to share with family. Works on desktop and mobile. The initial list contains the Waveshare ESP32-S3 Touch AMOLED 1.75C and Seeed Studio's TRMNL 7.5-inch OG DIY Kit, with original store links and product photos.
 
 Family members can browse without an account, reserve a gift so it isn't bought twice, and release their reservation from the same browser. Reservations update in real time across visitors. The list shows whether a gift is reserved, but doesn't collect or display the buyer's name. A reservation doesn't purchase a gift. Use the store link to buy it.
@@ -74,29 +76,35 @@ Tests cover reservation conflicts and retries, release permissions, public and p
 
 ## Vercel
 
-Create a separate production Convex deployment and Clerk production instance. In Clerk, activate the Convex integration and copy the production Frontend API URL. Set that exact URL as `CLERK_JWT_ISSUER_DOMAIN` on the production Convex deployment. Set `WISHLIST_OWNER_EMAIL` there to the owner's verified email too.
+Production deploys from `main` to [wishlist.juanquenga.com](https://wishlist.juanquenga.com). Connect the repository to Vercel, set its Production Branch to `main`, and add `wishlist.juanquenga.com` as the production domain.
 
-Import the repository into Vercel and select Bun. Add these Vercel environment variables for Production, using production Clerk keys:
-
-- `CONVEX_DEPLOY_KEY`
-- `CLERK_SECRET_KEY`
-- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
-
-Keep the secret keys out of Git. The Clerk secret key and Convex deploy key must stay server-side. The publishable key is public and uses the `NEXT_PUBLIC_` prefix.
-
-Set the production `CONVEX_DEPLOY_KEY` and production Clerk keys for Production only. If you enable Vercel Preview deployments with this build command, set a separate Convex preview deploy key and Clerk development keys for Preview. Never expose production keys to Preview. Set Convex's Preview defaults for `CLERK_JWT_ISSUER_DOMAIN` and `WISHLIST_OWNER_EMAIL` to match the development Clerk instance.
-
-Use this Vercel build command to deploy Convex and pass its URL to the Next.js build:
+`vercel.json` selects Next.js, installs with `bun install --frozen-lockfile`, and runs this build command:
 
 ```sh
 bunx convex deploy --cmd 'bun run build' --cmd-url-env-var-name NEXT_PUBLIC_CONVEX_URL
 ```
 
-Create the `convex` JWT template for the Clerk production instance as well. Use its production issuer URL in the production Convex environment. Configure Google's custom production credentials in that Clerk instance, using the exact redirect URI that Clerk displays. Run the seed against production once before sharing the public wishlist:
+The repository controls the install and build commands. Convex supplies `NEXT_PUBLIC_CONVEX_URL` to the Next.js build and deploys the backend functions. See [Convex's Vercel deployment guide](https://docs.convex.dev/production/hosting/vercel).
+
+Add these Vercel environment variables for Production:
+
+- `CONVEX_DEPLOY_KEY`
+- `CLERK_SECRET_KEY`
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+
+Use a production Convex deploy key and keys from the Clerk production instance. Keep the secret keys out of Git. `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is public.
+
+On the production Convex deployment, set `CLERK_JWT_ISSUER_DOMAIN` to the exact Clerk production Frontend API URL, including `https://`. Set `WISHLIST_OWNER_EMAIL` to the owner's verified email. Enable the Clerk Convex integration and create the `convex` JWT template with the claims shown above in the production Clerk instance too.
+
+Configure Google's custom production credentials in Clerk, using the exact redirect URI that Clerk displays. Use `https://wishlist.juanquenga.com` as the Google OAuth client's authorized JavaScript origin. Follow the production Google sign-in steps above.
+
+Run the seed against production once before sharing the wishlist:
 
 ```sh
 bunx convex run --prod gifts:seed '{}'
 ```
+
+If you enable Vercel Preview deployments, give Preview a separate Convex preview deploy key and Clerk development keys. Set Convex's Preview defaults for `CLERK_JWT_ISSUER_DOMAIN` and `WISHLIST_OWNER_EMAIL` to match that development Clerk instance. Production keys belong only to Production.
 
 Use the site's **Share wishlist** button to copy the link or open the native share sheet on mobile.
 

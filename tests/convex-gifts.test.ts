@@ -117,7 +117,8 @@ describe("wishlist Convex functions", () => {
     const t = convexTest(schema, modules);
     await t.mutation(internal.gifts.seed, {});
     const seeded = await t.query(api.gifts.list, {});
-    expect(seeded).toHaveLength(2);
+    expect(seeded).toHaveLength(3);
+    expect(seeded.some((gift) => gift.title === "Microduck" && gift.reserved === false)).toBe(true);
 
     await t.run(async (ctx) => {
       const giftId = ctx.db.normalizeId("gifts", seeded[0]!.id);
@@ -127,7 +128,7 @@ describe("wishlist Convex functions", () => {
     await t.mutation(internal.gifts.seed, {});
 
     const afterSecondSeed = await t.query(api.gifts.list, {});
-    expect(afterSecondSeed).toHaveLength(2);
+    expect(afterSecondSeed).toHaveLength(3);
     expect(afterSecondSeed[0]?.title).toBe("My edited gift");
   });
 
